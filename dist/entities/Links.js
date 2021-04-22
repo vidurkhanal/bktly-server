@@ -49,6 +49,11 @@ __decorate([
     typeorm_1.Column(),
     __metadata("design:type", Number)
 ], LinkSchema.prototype, "views", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    typeorm_1.Column({ nullable: true }),
+    __metadata("design:type", Number)
+], LinkSchema.prototype, "userId", void 0);
 LinkSchema = __decorate([
     type_graphql_1.ObjectType(),
     typeorm_1.Entity()

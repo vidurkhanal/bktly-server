@@ -35,7 +35,7 @@ export class LinkSchema extends BaseEntity {
   @Column()
   views: number;
 
-  // @Field()
-  // @Column({ nullable: true })
-  // creatorID!: number;
+  @Field()
+  @Column({ nullable: true })
+  userId!: number;
 }

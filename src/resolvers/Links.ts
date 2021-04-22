@@ -20,8 +20,8 @@ export class LinkResolver {
 
   @Mutation(() => LinkSchema)
   async CreateLink(
-    @Arg("completeLink") completeLink: string,
-    @Ctx() { req }: ApolloContext
+    @Arg("completeLink") completeLink: string
+    // @Ctx() { req }: ApolloContext
   ): Promise<LinkSchema | { error: { code: string; message: string } }> {
     try {
       const result = await getConnection()
@@ -32,6 +32,7 @@ export class LinkResolver {
           completeLink: completeLink,
           shortLink: nanoid(getRandomIntInclusive(12, 14)),
           views: 0,
+          userId: 0,
         })
         .returning("*")
         .execute();

@@ -37,7 +37,7 @@ let LinkResolver = class LinkResolver {
             return links;
         });
     }
-    CreateLink(completeLink, { req }) {
+    CreateLink(completeLink) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const result = yield typeorm_1.getConnection()
@@ -48,6 +48,7 @@ let LinkResolver = class LinkResolver {
                     completeLink: completeLink,
                     shortLink: nanoid_1.nanoid(getRandomNumber_1.getRandomIntInclusive(12, 14)),
                     views: 0,
+                    userId: 0,
                 })
                     .returning("*")
                     .execute();
@@ -79,9 +80,8 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => Links_1.LinkSchema),
     __param(0, type_graphql_1.Arg("completeLink")),
-    __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], LinkResolver.prototype, "CreateLink", null);
 LinkResolver = __decorate([

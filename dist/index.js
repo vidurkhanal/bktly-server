@@ -23,6 +23,7 @@ const morgan_1 = __importDefault(require("morgan"));
 const apollo_server_express_1 = require("apollo-server-express");
 const type_graphql_1 = require("type-graphql");
 const Links_2 = require("./resolvers/Links");
+const cors_1 = __importDefault(require("cors"));
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     yield typeorm_1.createConnection({
         type: "postgres",
@@ -35,6 +36,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     });
     yield Links_1.LinkSchema.delete({});
     const app = express_1.default();
+    app.use(cors_1.default({ origin: "http://localhost:3000", credentials: true }));
     const ApServer = new apollo_server_express_1.ApolloServer({
         schema: yield type_graphql_1.buildSchema({
             resolvers: [Links_2.LinkResolver],

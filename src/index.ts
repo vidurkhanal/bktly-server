@@ -16,6 +16,7 @@ import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { LinkResolver } from "./resolvers/Links";
 import { ApolloContext } from "./types";
+import cors from "cors";
 
 const main = async () => {
   await createConnection({
@@ -31,6 +32,7 @@ const main = async () => {
   await LinkSchema.delete({});
 
   const app = Express();
+  app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 
   const ApServer = new ApolloServer({
     schema: await buildSchema({
