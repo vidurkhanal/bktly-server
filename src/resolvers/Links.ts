@@ -1,7 +1,7 @@
 import { LinkSchema } from "../entities/Links";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { getConnection } from "typeorm";
-import { ApolloContext } from "../types";
+// import { ApolloContext } from "../types";
 import { nanoid } from "nanoid";
 import { getRandomIntInclusive } from "../utlities/getRandomNumber";
 

@@ -24,6 +24,8 @@ const apollo_server_express_1 = require("apollo-server-express");
 const type_graphql_1 = require("type-graphql");
 const Links_2 = require("./resolvers/Links");
 const cors_1 = __importDefault(require("cors"));
+const Users_1 = require("./entities/Users");
+const UserResolvers_1 = require("./resolvers/UserResolvers");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     yield typeorm_1.createConnection({
         type: "postgres",
@@ -32,14 +34,14 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         password: constants_1.DATABASE_PASSWORD,
         logging: true,
         synchronize: constants_1.__PROD__,
-        entities: [Links_1.LinkSchema],
+        entities: [Links_1.LinkSchema, Users_1.Users],
     });
     yield Links_1.LinkSchema.delete({});
     const app = express_1.default();
     app.use(cors_1.default({ origin: "http://localhost:3000", credentials: true }));
     const ApServer = new apollo_server_express_1.ApolloServer({
         schema: yield type_graphql_1.buildSchema({
-            resolvers: [Links_2.LinkResolver],
+            resolvers: [Links_2.LinkResolver, UserResolvers_1.UserResolver],
             validate: false,
         }),
         context: ({ req, res }) => ({ req, res }),
@@ -47,8 +49,8 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     ApServer.applyMiddleware({ app, cors: false });
     app.use(helmet_1.default());
     app.use(morgan_1.default("combined"));
-    app.get("/", (_, res) => {
-        return res.status(200).send("Hello World");
+    app.get("/", (_req, res) => {
+        res.redirect("http://localhost:3000");
     });
     app.get("/:shortURL", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const sURL = req.params.shortURL;

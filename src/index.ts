@@ -17,6 +17,8 @@ import { buildSchema } from "type-graphql";
 import { LinkResolver } from "./resolvers/Links";
 import { ApolloContext } from "./types";
 import cors from "cors";
+import { Users } from "./entities/Users";
+import { UserResolver } from "./resolvers/UserResolvers";
 
 const main = async () => {
   await createConnection({
@@ -26,17 +28,18 @@ const main = async () => {
     password: DATABASE_PASSWORD,
     logging: true,
     synchronize: __PROD__,
-    entities: [LinkSchema],
+    entities: [LinkSchema, Users],
   });
 
   await LinkSchema.delete({});
+  // await Users.delete({});
 
   const app = Express();
   app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 
   const ApServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [LinkResolver],
+      resolvers: [LinkResolver, UserResolver],
       validate: false,
     }),
     context: ({ req, res }): ApolloContext => ({ req, res }),
@@ -47,8 +50,8 @@ const main = async () => {
   app.use(helmet());
   app.use(morgan("combined"));
 
-  app.get("/", (_, res) => {
-    return res.status(200).send("Hello World");
+  app.get("/", (_req, res) => {
+    res.redirect("http://localhost:3000");
   });
 
   app.get("/:shortURL", async (req, res) => {
