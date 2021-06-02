@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
-import { Users } from "./entities/Users";
+import { Session, SessionData } from "express-session";
 
 export type ApolloContext = {
-  req: Request;
+  req: Request & {
+    session: Session & Partial<SessionData> & { userId?: string };
+  };
   res: Response;
   payload?: { userID: number };
 };

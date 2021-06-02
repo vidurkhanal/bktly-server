@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from "type-graphql";
+import { Field, ObjectType } from "type-graphql";
 import {
   BaseEntity,
   Column,
@@ -11,9 +11,9 @@ import {
 @ObjectType()
 @Entity()
 export class Users extends BaseEntity {
-  @Field(() => Int)
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @Field(() => String)
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
   @Field(() => String)
   @CreateDateColumn()
@@ -22,6 +22,10 @@ export class Users extends BaseEntity {
   @Field(() => String)
   @UpdateDateColumn()
   updatedAt = Date;
+
+  @Field(() => String)
+  @Column({ nullable: true })
+  fullName!: string;
 
   @Field(() => String)
   @Column({ unique: true })

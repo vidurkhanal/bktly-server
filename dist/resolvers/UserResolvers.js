@@ -27,8 +27,6 @@ const argon2_1 = require("argon2");
 const typeorm_1 = require("typeorm");
 const Users_1 = require("../entities/Users");
 const auth_1 = require("../JoiSchema/auth");
-const createTokens_1 = require("../utlities/createTokens");
-const isAuth_1 = require("../middlewares/isAuth");
 let AuthResponse = class AuthResponse {
 };
 __decorate([
@@ -42,27 +40,21 @@ __decorate([
 AuthResponse = __decorate([
     type_graphql_1.ObjectType()
 ], AuthResponse);
-let LoginResponse = class LoginResponse {
-};
-__decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
-    __metadata("design:type", String)
-], LoginResponse.prototype, "error", void 0);
-__decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
-    __metadata("design:type", String)
-], LoginResponse.prototype, "accessToken", void 0);
-LoginResponse = __decorate([
-    type_graphql_1.ObjectType()
-], LoginResponse);
 let UserResolver = class UserResolver {
     hello() {
         return "Olap !!";
     }
-    bye({ payload }) {
-        return "hello " + payload.userID;
+    myAccount({ req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const userID = req.session.userId;
+            if (!req.session.userId) {
+                return null;
+            }
+            const user = yield Users_1.Users.findOne(userID);
+            return user;
+        });
     }
-    createAccount(email, password) {
+    createAccount(fullName, email, password) {
         return __awaiter(this, void 0, void 0, function* () {
             const { error } = auth_1.authSchema.validate({ email, password });
             let user;
@@ -88,7 +80,8 @@ let UserResolver = class UserResolver {
                     .insert()
                     .into(Users_1.Users)
                     .values({
-                    email,
+                    email: email,
+                    fullName: fullName,
                     password: hashedPassword,
                 })
                     .returning("*")
@@ -106,7 +99,7 @@ let UserResolver = class UserResolver {
             return { user };
         });
     }
-    login(email, password, { res }) {
+    login(email, password, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield Users_1.Users.findOne({ where: { email } });
             if (!user) {
@@ -120,11 +113,9 @@ let UserResolver = class UserResolver {
                     error: "You Have Supplied An Incorrect Password. Please check your password.",
                 };
             }
-            res.cookie("TKNSHRTFY", createTokens_1.createRefreshToken(user), {
-                httpOnly: true,
-            });
+            req.session.userId = user.id;
             return {
-                accessToken: createTokens_1.createAccessToken(user),
+                user,
             };
         });
     }
@@ -136,23 +127,23 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UserResolver.prototype, "hello", null);
 __decorate([
-    type_graphql_1.Query(() => String),
-    type_graphql_1.UseMiddleware(isAuth_1.isAuth),
+    type_graphql_1.Query(() => Users_1.Users, { nullable: true }),
     __param(0, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], UserResolver.prototype, "bye", null);
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "myAccount", null);
 __decorate([
     type_graphql_1.Mutation(() => AuthResponse),
-    __param(0, type_graphql_1.Arg("email")),
-    __param(1, type_graphql_1.Arg("password")),
+    __param(0, type_graphql_1.Arg("fullName")),
+    __param(1, type_graphql_1.Arg("email")),
+    __param(2, type_graphql_1.Arg("password")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "createAccount", null);
 __decorate([
-    type_graphql_1.Mutation(() => LoginResponse),
+    type_graphql_1.Mutation(() => AuthResponse),
     __param(0, type_graphql_1.Arg("email")),
     __param(1, type_graphql_1.Arg("password")),
     __param(2, type_graphql_1.Ctx()),

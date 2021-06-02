@@ -13,11 +13,8 @@ import { getConnection } from "typeorm";
 import { Users } from "../entities/Users";
 import { authSchema } from "../JoiSchema/auth";
 import { ApolloContext } from "../types";
-import {
-  createAccessToken,
-  createRefreshToken,
-} from "../utlities/createTokens";
 import { isAuth } from "../middlewares/isAuth";
+import { __PROD__ } from "../constants";
 // import Joi from "joi";
 
 @ObjectType()
@@ -28,14 +25,6 @@ class AuthResponse {
   user?: Users;
 }
 
-@ObjectType()
-class LoginResponse {
-  @Field(() => String, { nullable: true })
-  error?: string;
-  @Field(() => String, { nullable: true })
-  accessToken?: String;
-}
-
 @Resolver()
 export class UserResolver {
   @Query(() => String)
@@ -43,14 +32,19 @@ export class UserResolver {
     return "Olap !!";
   }
 
-  @Query(() => String)
-  @UseMiddleware(isAuth)
-  bye(@Ctx() { payload }: ApolloContext) {
-    return "hello " + payload!.userID;
+  @Query(() => Users, { nullable: true })
+  async myAccount(@Ctx() { req }: ApolloContext) {
+    const userID = req.session.userId;
+    if (!req.session.userId) {
+      return null;
+    }
+    const user = await Users.findOne(userID);
+    return user;
   }
 
   @Mutation(() => AuthResponse)
   async createAccount(
+    @Arg("fullName") fullName: string,
     @Arg("email") email: string,
     @Arg("password") password: string
   ): Promise<AuthResponse> {
@@ -78,7 +72,8 @@ export class UserResolver {
         .insert()
         .into(Users)
         .values({
-          email,
+          email: email,
+          fullName: fullName,
           password: hashedPassword,
         })
         .returning("*")
@@ -95,12 +90,12 @@ export class UserResolver {
     return { user };
   }
 
-  @Mutation(() => LoginResponse)
+  @Mutation(() => AuthResponse)
   async login(
     @Arg("email") email: string,
     @Arg("password") password: string,
-    @Ctx() { res }: ApolloContext
-  ): Promise<LoginResponse> {
+    @Ctx() { req }: ApolloContext
+  ): Promise<AuthResponse> {
     const user = await Users.findOne({ where: { email } });
     if (!user) {
       return {
@@ -116,12 +111,9 @@ export class UserResolver {
       };
     }
 
-    res.cookie("TKNSHRTFY", createRefreshToken(user), {
-      httpOnly: true,
-    });
-
+    req.session.userId = user.id;
     return {
-      accessToken: createAccessToken(user),
+      user,
     };
   }
 }

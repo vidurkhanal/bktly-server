@@ -20,9 +20,9 @@ let Users = class Users extends typeorm_1.BaseEntity {
     }
 };
 __decorate([
-    type_graphql_1.Field(() => type_graphql_1.Int),
-    typeorm_1.PrimaryGeneratedColumn(),
-    __metadata("design:type", Number)
+    type_graphql_1.Field(() => String),
+    typeorm_1.PrimaryGeneratedColumn("uuid"),
+    __metadata("design:type", String)
 ], Users.prototype, "id", void 0);
 __decorate([
     type_graphql_1.Field(() => String),
@@ -34,6 +34,11 @@ __decorate([
     typeorm_1.UpdateDateColumn(),
     __metadata("design:type", Object)
 ], Users.prototype, "updatedAt", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    typeorm_1.Column({ nullable: true }),
+    __metadata("design:type", String)
+], Users.prototype, "fullName", void 0);
 __decorate([
     type_graphql_1.Field(() => String),
     typeorm_1.Column({ unique: true }),
