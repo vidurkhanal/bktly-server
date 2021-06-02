@@ -26,6 +26,9 @@ const Links_2 = require("./resolvers/Links");
 const cors_1 = __importDefault(require("cors"));
 const Users_1 = require("./entities/Users");
 const UserResolvers_1 = require("./resolvers/UserResolvers");
+const redis_1 = __importDefault(require("redis"));
+const express_session_1 = __importDefault(require("express-session"));
+const connect_redis_1 = __importDefault(require("connect-redis"));
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     yield typeorm_1.createConnection({
         type: "postgres",
@@ -37,7 +40,27 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         entities: [Links_1.LinkSchema, Users_1.Users],
     });
     yield Links_1.LinkSchema.delete({});
+    yield Users_1.Users.delete({});
     const app = express_1.default();
+    let RedisStore = connect_redis_1.default(express_session_1.default);
+    let redisClient = redis_1.default.createClient();
+    app.use(express_session_1.default({
+        name: "TKNSHRTFY_AUTHID",
+        store: new RedisStore({
+            client: redisClient,
+            disableTouch: true,
+            disableTTL: true,
+        }),
+        cookie: {
+            maxAge: 315569520000,
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+        },
+        saveUninitialized: false,
+        secret: "knN!KnjnNJN##@!njnnn%%@/..;[",
+        resave: false,
+    }));
     app.use(cors_1.default({ origin: "http://localhost:3000", credentials: true }));
     const ApServer = new apollo_server_express_1.ApolloServer({
         schema: yield type_graphql_1.buildSchema({
@@ -55,12 +78,13 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     app.get("/:shortURL", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const sURL = req.params.shortURL;
         const link = yield Links_1.LinkSchema.findOne({ where: { shortLink: sURL } });
-        yield Links_1.LinkSchema.update({ shortLink: sURL }, { views: (link === null || link === void 0 ? void 0 : link.views) + 1 });
-        res.redirect(link === null || link === void 0 ? void 0 : link.completeLink);
+        return res.redirect(link === null || link === void 0 ? void 0 : link.completeLink);
     }));
     app.listen(constants_1.PORT, () => {
         console.log("LISTENING ON PORT", constants_1.PORT);
     });
 });
 main().catch((e) => console.log(e.details));
+const date = new Date().toString();
+console.log("kbdhjkbd ->", Date.parse(date));
 //# sourceMappingURL=index.js.map

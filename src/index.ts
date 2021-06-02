@@ -19,6 +19,9 @@ import { ApolloContext } from "./types";
 import cors from "cors";
 import { Users } from "./entities/Users";
 import { UserResolver } from "./resolvers/UserResolvers";
+import redis from "redis";
+import session from "express-session";
+import connectRedis from "connect-redis";
 
 const main = async () => {
   await createConnection({
@@ -32,9 +35,33 @@ const main = async () => {
   });
 
   await LinkSchema.delete({});
-  // await Users.delete({});
+  await Users.delete({});
 
   const app = Express();
+
+  let RedisStore = connectRedis(session);
+  let redisClient = redis.createClient();
+
+  app.use(
+    session({
+      name: "TKNSHRTFY_AUTHID",
+      store: new RedisStore({
+        client: redisClient,
+        disableTouch: true,
+        disableTTL: true,
+      }),
+      cookie: {
+        maxAge: 315569520000,
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+      },
+      saveUninitialized: false,
+      secret: "knN!KnjnNJN##@!njnnn%%@/..;[",
+      resave: false,
+    })
+  );
+
   app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 
   const ApServer = new ApolloServer({
@@ -48,6 +75,7 @@ const main = async () => {
   ApServer.applyMiddleware({ app, cors: false });
 
   app.use(helmet());
+
   app.use(morgan("combined"));
 
   app.get("/", (_req, res) => {
@@ -57,11 +85,11 @@ const main = async () => {
   app.get("/:shortURL", async (req, res) => {
     const sURL = req.params.shortURL;
     const link = await LinkSchema.findOne({ where: { shortLink: sURL } });
-    await LinkSchema.update(
-      { shortLink: sURL },
-      { views: (link?.views as number) + 1 }
-    );
-    res.redirect(link?.completeLink as string);
+    // await LinkSchema.update(
+    //   { shortLink: sURL },
+    //   { views: (link?.views as number) + 1 }
+    // );
+    return res.redirect(link?.completeLink as string);
   });
 
   app.listen(PORT, () => {
@@ -70,3 +98,6 @@ const main = async () => {
 };
 
 main().catch((e) => console.log(e.details));
+
+const date = new Date().toString();
+console.log("kbdhjkbd ->", Date.parse(date));
